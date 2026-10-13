@@ -11,7 +11,9 @@ This plugin test checks for the unsafe usage of the ``yaml.load`` function from
 the PyYAML package. The yaml.load function provides the ability to construct
 an arbitrary Python object, which may be dangerous if you receive a YAML
 document from an untrusted source. The function yaml.safe_load limits this
-ability to simple Python objects like integers or lists.
+ability to simple Python objects like integers or lists. The PyYAML
+``BaseLoader`` and ``CBaseLoader`` also do not construct arbitrary Python
+objects; they preserve scalar values as strings.
 
 Please see
 https://pyyaml.org/wiki/PyYAMLDocumentation#LoadingYAML for more information
@@ -62,8 +64,12 @@ def yaml_load(context):
             func == "load",
             not context.check_call_arg_value("Loader", "SafeLoader"),
             not context.check_call_arg_value("Loader", "CSafeLoader"),
+            not context.check_call_arg_value("Loader", "BaseLoader"),
+            not context.check_call_arg_value("Loader", "CBaseLoader"),
             not context.get_call_arg_at_position(1) == "SafeLoader",
             not context.get_call_arg_at_position(1) == "CSafeLoader",
+            not context.get_call_arg_at_position(1) == "BaseLoader",
+            not context.get_call_arg_at_position(1) == "CBaseLoader",
         ]
     ):
         return bandit.Issue(
